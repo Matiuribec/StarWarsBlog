@@ -1,45 +1,82 @@
+const apiUrl = "https://www.swapi.tech/api/";
 const getState = ({ getStore, getActions, setStore }) => {
-	return {
-		store: {
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
-		},
-		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-			loadSomeData: () => {
-				/**
-					fetch().then().then(data => setStore({ "foo": data.bar }))
-				*/
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
+  return {
+    store: {
+      planets: [],
+      species: [],
+      films: [],
+      people: [],
+      starships: [],
+      vehicles: [],
+      planetsid: [],
+      favorites: [],
+    },
 
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
+    actions: {
+      getResources: async (resource, pagination) => {
+        // let params = "";
+        // console.log(pagination);
+        // if (!!pagination?.page) {
+        //   params = `?page=${pagination?.page}&limit=${pagination?.limit || 10}`;
+        // }
 
-				//reset the global store
-				setStore({ demo: demo });
-			}
-		}
-	};
+        let response = await fetch(apiUrl + resource);
+        if (!response.ok) {
+          console.log(response.status + ": " + response.statusText);
+          return;
+        }
+        let data = await response.json();
+        let newStore = { ...getStore() };
+        newStore[resource] = data.results || data.result;
+        setStore(newStore);
+      },
+
+      getDetails: async (resource, id) => {
+        let response = await fetch(
+          `https://www.swapi.tech/api/${resource}/${id}`
+        );
+        if (!response.ok) {
+          console.log(response.status + ": " + response.statusText);
+          return;
+        }
+        let data = await response.json();
+        return {
+          ...data.result.properties,
+        };
+      },
+
+  
+      handleFavorites: (data) => {
+        let currentStore = getStore();
+        let actions = getActions();
+        let favoriteIndex = currentStore.favorites.findIndex(
+          (fav) => fav.link == data.link
+        );
+        if (favoriteIndex == -1) {
+          setStore({
+            ...currentStore,
+            favorites: [...currentStore.favorites, data],
+          });
+        } else {
+          actions.deleteFav(favoriteIndex)
+        }
+      },
+      deleteFav: (index) => {
+        let currentStore = getStore();
+        let newFavorites = [...currentStore.favorites];
+        newFavorites.splice(index, 1);
+        setStore({
+          ...currentStore,
+          favorites: newFavorites,
+        });
+      }
+      //loadInfo: async () => {
+      //fetch(`https://www.swapi.tech/api/${resource}/${id}`)
+      //  .then((res) => res.json())
+      //.then((data) => setStore(planetsid = data.result.properties))
+      // }
+    },
+  };
 };
 
 export default getState;
