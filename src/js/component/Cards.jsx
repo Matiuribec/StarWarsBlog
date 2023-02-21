@@ -44,9 +44,9 @@ const Cards = (props) => {
         >
           <i
             className={
-              favExist(props.index) == true
-                ? "bi bi-suit-heart text-danger"
-                : "bi bi-suit-heart"
+              // favExist(props.index) == true
+              //   ? "bi bi-suit-heart text-danger" : 
+                "bi bi-suit-heart"
             }
           />
         </button>
